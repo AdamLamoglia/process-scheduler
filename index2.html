@@ -1,0 +1,42 @@
+<!DOCTYPE <!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Escalonador de Processos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="../SO/assets/js/script2.js"></script>
+
+</head>
+<body>
+   
+    <label>Quantidade de Processos</label><br>
+    <input type="text" id="num_processos">
+    <a href="#" id="atributos" onclick="criarFields()">Definir Atributos</a><br><br>
+    <div id="container"/>
+
+    <label>Algoritmo de Escalonamento</label><br>
+    <select>
+            <option>FIFO</option>
+            <option>SJF</option>
+            <option>Round Robin</option>
+            <option>EDF</option>
+        </select><br><br>
+
+    <label>Algoritmo de Substituição de Páginas</label><br>
+    <select>
+            <option>FIFO</option>
+            <option>MRU</option>
+        </select><br><br>
+
+    <label>Quantum do Sistema</label><br>
+    <input type="text" id="quantum"><br><br>
+
+    <label>Sobrecarga do Sistema</label><br>
+    <input type="text" id="sobrecarga"><br><br>
+
+    <button type="button" onclick="iniciar()">Iniciar</button><br><br>
+
+    
+</body>
+</html>
