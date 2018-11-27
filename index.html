@@ -6,14 +6,22 @@
     <title>Escalonador de Processos</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="../SO/assets/js/script2.js"></script>
-
+    <style>
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+  </style>
 </head>
 <body>
    
     <label>Quantidade de Processos</label><br>
     <input type="text" id="num_processos">
-    <a href="#" id="atributos" onclick="criarFields()">Definir Atributos</a><br><br>
-    <div id="container"/>
+    <div id="container">
+        <a href="#" id="atributos" onclick="criarFields()">Definir Atributos</a>
+    </div>
+   
+    <br><br>
 
     <label>Algoritmo de Escalonamento</label><br>
     <select>
@@ -36,6 +44,14 @@
     <input type="text" id="sobrecarga"><br><br>
 
     <button type="button" onclick="iniciar()">Iniciar</button><br><br>
+    <canvas id="canvas" width="300" height="100"></canvas>
+
+    <table id='gantt' style="width:95%" align="right">
+        <caption>Gráfico de Gantt</caption>
+        <tr id='tempo'>
+
+        </tr>
+      </table>
 
     
 </body>

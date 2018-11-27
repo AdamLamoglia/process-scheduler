@@ -6,6 +6,8 @@ var sobrecarga;
 function criarFields(){
 
     num_processos = document.getElementById("num_processos").value
+    
+    container.appendChild(document.createElement("br"));
 
     for (i=0; i < num_processos; i++){
 
@@ -46,7 +48,54 @@ function criarFields(){
     
 }
 
+function deletarFields(){
+    
+    var div = document.getElementById('container');
+    
+    while(div.firstChild){
+        div.removeChild(div.firstChild);
+    }
+}
+
+function criarGraficoDeGantt(){
+
+    timeline = document.getElementById("tempo");
+    
+    var time = timeline.insertCell(-1);
+    time.innerHTML = "Processo";
+
+    //Cria colunas
+    for(i = 0; i < 50; i++){
+
+        var time = timeline.insertCell(-1);
+        time.innerHTML = i;
+    }
+
+    //Cria linhas
+    for(i = 0; i < num_processos; i++){
+
+        table = document.getElementById("gantt");
+
+        var row = table.insertRow(-1);
+        
+        var time = row.insertCell(-1);
+        time.innerHTML = i;
+
+        //Cria colunas para cada linha
+        for(j = 0; j < 50; j++){
+
+            var time = row.insertCell(-1);
+            time.innerHTML = "&nbsp";
+            time.width = "90px"
+        }
+
+    }
+
+}
+
 function iniciar(){
 
-    console.log("yes")
+    deletarFields();
+  
+    criarGraficoDeGantt();
 }
