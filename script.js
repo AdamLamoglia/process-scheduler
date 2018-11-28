@@ -1,6 +1,13 @@
 var num_processos;
 var quantum;
 var sobrecarga;
+var escalonamento;
+
+//vetores
+var tempos_chegada = [],
+    prioridades = [],
+    tempos_execucao = [],
+    deadlines = [];
 
 
 function criarFields(){
@@ -20,6 +27,7 @@ function criarFields(){
         var input = document.createElement("input");
         input.type = "text";   
         input.id = "tchegada"+i;
+        console.log(input.id)
         container.appendChild(input);  
         container.appendChild(document.createElement("br"));
         container.appendChild(document.createElement("br"));
@@ -49,6 +57,15 @@ function criarFields(){
 }
 
 function deletarFields(){
+    
+    for(i = 0; i < num_processos; i++){
+    
+        tempos_chegada[i]     = document.getElementById("tchegada"+i).value;
+        tempos_execucao[i]    = document.getElementById("texec"+i).value;
+        deadlines[i]          = document.getElementById("deadline"+i).value;
+
+        console.log(tempos_execucao[i]);
+    }
     
     var div = document.getElementById('container');
     
@@ -93,9 +110,57 @@ function criarGraficoDeGantt(){
 
 }
 
+function fifo(){
+
+
+}
+
+function sjf(){
+
+
+}
+
+function roundRobin(){
+
+
+}
+
+function edf(){
+
+
+}
+
+function escalonarProcessos(){
+
+    escalonamento = document.getElementById("escalonamentos").value;
+ 
+    switch(escalonamento){
+
+        case "FIFO":
+            fifo();
+        break;
+
+        case "SJF":
+            sjf();
+        break;
+
+        case "Round Robin":
+            roundRobin();
+        break;
+
+        case "EDF":
+            edf();
+        break;
+        
+    }
+
+}
+
 function iniciar(){
 
     deletarFields();
   
     criarGraficoDeGantt();
+
+    escalonarProcessos();
 }
