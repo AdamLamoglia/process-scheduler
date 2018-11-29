@@ -7,7 +7,20 @@ var escalonamento;
 var tempos_chegada = [],
     prioridades = [],
     tempos_execucao = [],
-    deadlines = [];
+    deadlines = [],
+    processos = [];
+
+class Processo {
+    
+    constructor(tempo_chegada, tempo_execucao, deadline, id) {
+          this.tempo_chegada = tempo_chegada;
+          this.tempo_execucao = tempo_execucao;
+          this.deadline = deadline;
+          this.id = id;
+
+    }
+}
+
 
 
 function criarFields(){
@@ -59,12 +72,10 @@ function criarFields(){
 function deletarFields(){
     
     for(i = 0; i < num_processos; i++){
-    
-        tempos_chegada[i]     = document.getElementById("tchegada"+i).value;
-        tempos_execucao[i]    = document.getElementById("texec"+i).value;
-        deadlines[i]          = document.getElementById("deadline"+i).value;
+        
+        processos[i] = new Processo(document.getElementById("tchegada"+i).value, document.getElementById("texec"+i).value,
+                                             document.getElementById("deadline"+i).value, i+1);
 
-        console.log(tempos_execucao[i]);
     }
     
     var div = document.getElementById('container');
@@ -110,12 +121,173 @@ function criarGraficoDeGantt(){
 
 }
 
+function colorir(lugar,cells){
+    console.log(lugar);
+    cells.item(lugar).style.backgroundColor = "red";
+}
+
+const sleep = (milliseconds) => {
+    return new Promise(resolve => setTimeout(resolve, milliseconds))
+  }
+  
+
 function fifo(){
 
+    //ordena processos por tempo de chegada
+    processos.sort(function (a, b) {
+        
+        if (a.tempo_chegada > b.tempo_chegada) {
+          return 1;
+        }
+        
+        if (a.tempo_chegada < b.tempo_chegada) {
+          return -1;
+        }
+
+        return 0;
+      });
+
+    var table = document.getElementById('gantt');
+
+    var tempo_atual = 1;
+
+    var i = 0;
+    var cells;
+    var cellLength;
+
+    while(i<processos.length){
+
+        cellLength = tempo_atual + parseInt(processos[i].tempo_execucao);
+        
+        for( j = tempo_atual; j < cellLength; j++){
+            
+            (function(i,index){
+                
+                setTimeout(function(){
+                    
+                    cells = table.rows.item(processos[i].id).cells;
+                    
+                    cellLength = tempo_atual + parseInt(processos[i].tempo_execucao);
+                    
+                    cells.item(index).style.backgroundColor = "red";
+                },200*j);
+            })(i,j)
+
+          
+            
+        }
+        
+        i++;
+        tempo_atual = cellLength;
+    
+    }
+
+    
 
 }
 
 function sjf(){
+
+    console.log(processos);
+
+    processos.sort(function (a, b) {
+        
+        if (a.tempo_chegada > b.tempo_chegada) {
+          return 1;
+        }
+        
+        if (a.tempo_chegada < b.tempo_chegada) {
+          return -1;
+        }
+        if(a.tempo_chegada == b.tempo_chegada){
+            if (a.tempo_execucao < b.tempo_execucao) {
+                return -1;
+            }
+            if(a.tempo_execucao > b.tempo_execucao){
+                return 1;
+            }
+        }
+
+        return 0;
+      });
+      var processo = new Processo(0,0,0,0);
+      processo = processos[0];
+      
+      var table = document.getElementById('gantt');
+      var cells;
+      var cellLength;
+      var tempo_atual = 1;
+      var tamanho = processos.length;
+
+      while(tamanho > 0){
+          console.log("interacao");
+
+        cellLength = tempo_atual + parseInt(processo.tempo_execucao);
+        
+        for( j = tempo_atual; j < cellLength; j++){
+
+            (function(index){
+                
+                setTimeout(function(){
+                    
+                    cells = table.rows.item(processo.id).cells;
+                    
+                    cellLength = tempo_atual + parseInt(processo.tempo_execucao);
+                    
+                    cells.item(index).style.backgroundColor = "red";
+                },200*j);
+            })(j)
+            
+        }
+
+        tempo_atual = cellLength;
+        
+        var aux = [];
+        var cont = 0;
+        var index;
+        for(k = 0; k < processos.length; k++){
+            if(processo.id == processos[k].id){
+                index=k;
+            }
+        }
+        console.log(index);
+        if (index > -1) {
+            processos.splice(index, 1);
+        }
+        console.log("processos");
+        console.log(processos);
+        for(var i = 0; i < processos.length; i++){
+
+            if(processos[i].tempo_chegada < tempo_atual + 1){
+                
+                aux[cont] = processos[i];
+                cont++;
+            }
+        }
+        console.log("valor de aux");
+         console.log(aux);
+
+        aux.sort(function (a, b) {
+        
+            if (a.tempo_execucao < b.tempo_execucao) {
+                return -1;
+            }
+            if(a.tempo_execucao > b.tempo_execucao){
+                return 1;
+            }
+            
+    
+            return 0;
+        });
+
+
+        tamanho--;
+
+        processo = aux[0];
+
+        //console.log(aux[0]);
+
+      }
 
 
 }
