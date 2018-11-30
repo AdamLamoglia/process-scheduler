@@ -11,37 +11,35 @@ var tempos_chegada = [],
     processos = [];
 
 class Processo {
-    
-    constructor(tempo_chegada, tempo_execucao, deadline, id) {
-          this.tempo_chegada = tempo_chegada;
-          this.tempo_execucao = tempo_execucao;
-          this.deadline = deadline;
-          this.id = id;
+
+    constructor(tempo_chegada, tempo_execucao, deadline, id, visitado) {
+        this.tempo_chegada = tempo_chegada;
+        this.tempo_execucao = tempo_execucao;
+        this.deadline = deadline;
+        this.id = id;
+        this.visitado = visitado;
 
     }
 }
 
-
-
-function criarFields(){
+function criarFields() {
 
     num_processos = document.getElementById("num_processos").value
-    
+
     container.appendChild(document.createElement("br"));
 
-    for (i=0; i < num_processos; i++){
+    for (i = 0; i < num_processos; i++) {
 
         container.appendChild(document.createTextNode("Processo " + i));
         container.appendChild(document.createElement("br"));
         container.appendChild(document.createElement("br"));
-        
+
         //tempo chegada
         container.appendChild(document.createTextNode("Tempo de Chegada: "));
         var input = document.createElement("input");
-        input.type = "text";   
-        input.id = "tchegada"+i;
-        console.log(input.id)
-        container.appendChild(input);  
+        input.type = "text";
+        input.id = "tchegada" + i;
+        container.appendChild(input);
         container.appendChild(document.createElement("br"));
         container.appendChild(document.createElement("br"));
 
@@ -49,70 +47,89 @@ function criarFields(){
 
         container.appendChild(document.createTextNode("Tempo de Execução: "));
         input = document.createElement("input");
-        input.type = "text";   
-        input.id = "texec"+i;
-        container.appendChild(input);  
+        input.type = "text";
+        input.id = "texec" + i;
+        container.appendChild(input);
         container.appendChild(document.createElement("br"));
         container.appendChild(document.createElement("br"));
 
         //deadline
         container.appendChild(document.createTextNode("Deadline: "));
         input = document.createElement("input");
-        input.type = "text";  
-        input.id = "deadline"+i;
-        container.appendChild(input);  
+        input.type = "text";
+        input.id = "deadline" + i;
+        container.appendChild(input);
         container.appendChild(document.createElement("br"));
         container.appendChild(document.createElement("br"));
- 
+
     }
 
-    
+
 }
 
-function deletarFields(){
-    
-    for(i = 0; i < num_processos; i++){
-        
-        processos[i] = new Processo(document.getElementById("tchegada"+i).value, document.getElementById("texec"+i).value,
-                                             document.getElementById("deadline"+i).value, i+1);
+function deletarFields() {
+
+    for (i = 0; i < num_processos; i++) {
+
+        processos[i] = new Processo(parseInt(document.getElementById("tchegada" + i).value), parseInt(document.getElementById("texec" + i).value),
+            parseInt(document.getElementById("deadline" + i).value), i + 1, false);
 
     }
-    
+
     var div = document.getElementById('container');
-    
-    while(div.firstChild){
+
+    while (div.firstChild) {
         div.removeChild(div.firstChild);
     }
 }
 
-function criarGraficoDeGantt(){
+function criarGraficoDeGantt() {
+    var time;
 
     timeline = document.getElementById("tempo");
-    
-    var time = timeline.insertCell(-1);
+
+    time = timeline.insertCell(-1);
     time.innerHTML = "Processo";
 
-    //Cria colunas
-    for(i = 0; i < 50; i++){
+    time = timeline.insertCell(-1);
+    time.innerHTML = "TC";
 
-        var time = timeline.insertCell(-1);
+    time = timeline.insertCell(-1);
+    time.innerHTML = "TE";
+
+    time = timeline.insertCell(-1);
+    time.innerHTML = "DL";
+
+    //Cria colunas
+    for (i = 0; i < 50; i++) {
+
+        time = timeline.insertCell(-1);
         time.innerHTML = i;
     }
 
     //Cria linhas
-    for(i = 0; i < num_processos; i++){
+    for (i = 0; i < num_processos; i++) {
 
         table = document.getElementById("gantt");
 
         var row = table.insertRow(-1);
-        
-        var time = row.insertCell(-1);
+
+        time = row.insertCell(-1);
         time.innerHTML = i;
 
-        //Cria colunas para cada linha
-        for(j = 0; j < 50; j++){
+        time = row.insertCell(-1);
+        time.innerHTML = processos[i].tempo_chegada;
 
-            var time = row.insertCell(-1);
+        time = row.insertCell(-1);
+        time.innerHTML = processos[i].tempo_execucao;
+
+        time = row.insertCell(-1);
+        time.innerHTML = processos[i].deadline;
+
+        //Cria colunas para cada linha
+        for (j = 0; j < 50; j++) {
+
+            time = row.insertCell(-1);
             time.innerHTML = "&nbsp";
             time.width = "90px"
         }
@@ -121,217 +138,290 @@ function criarGraficoDeGantt(){
 
 }
 
-function colorir(lugar,cells){
-    console.log(lugar);
-    cells.item(lugar).style.backgroundColor = "red";
-}
 
-const sleep = (milliseconds) => {
-    return new Promise(resolve => setTimeout(resolve, milliseconds))
-  }
-  
-
-function fifo(){
+function fifo() {
 
     //ordena processos por tempo de chegada
     processos.sort(function (a, b) {
-        
+
         if (a.tempo_chegada > b.tempo_chegada) {
-          return 1;
+            return 1;
         }
-        
+
         if (a.tempo_chegada < b.tempo_chegada) {
-          return -1;
+            return -1;
         }
 
         return 0;
-      });
+    });
 
     var table = document.getElementById('gantt');
 
-    var tempo_atual = 1;
+    var tempo_atual = 4;
+    var i = 0;
+    var cells;
+    var cellLength;
+
+    while (i < processos.length) {
+
+        cellLength = tempo_atual + processos[i].tempo_execucao;
+
+        for (j = tempo_atual; j < cellLength; j++) {
+
+            (function (i, index) {
+
+                setTimeout(function () {
+
+                    cells = table.rows.item(processos[i].id).cells;
+
+                    cellLength = tempo_atual + processos[i].tempo_execucao;
+
+                    cells.item(index).style.backgroundColor = "red";
+                }, 200 * j);
+            })(i, j)
+
+
+
+        }
+
+        i++;
+        tempo_atual = cellLength;
+
+    }
+
+
+
+}
+
+function sjf() {
+
+
+    processos.sort(function (a, b) {
+
+        if (a.tempo_execucao > b.tempo_execucao) {
+            return 1;
+        }
+        if (a.tempo_execucao < b.tempo_execucao) {
+            return -1;
+        }
+
+        return 0;
+    });
+
+    var table = document.getElementById('gantt');
+
+    var tempo_atual = 4;
 
     var i = 0;
     var cells;
     var cellLength;
 
-    while(i<processos.length){
+    while (i < processos.length) {
 
-        cellLength = tempo_atual + parseInt(processos[i].tempo_execucao);
-        
-        for( j = tempo_atual; j < cellLength; j++){
-            
-            (function(i,index){
-                
-                setTimeout(function(){
-                    
-                    cells = table.rows.item(processos[i].id).cells;
-                    
-                    cellLength = tempo_atual + parseInt(processos[i].tempo_execucao);
-                    
+        //retorna indice correspondente ao primeiro da fila de prontos
+        var k = procurarProcesso(tempo_atual);
+
+        cellLength = tempo_atual + parseInt(processos[k].tempo_execucao);
+
+        for (j = tempo_atual; j < cellLength; j++) {
+
+            (function (k, index) {
+
+                setTimeout(function () {
+
+                    cells = table.rows.item(processos[k].id).cells;
+
+                    cellLength = tempo_atual + parseInt(processos[k].tempo_execucao);
+
                     cells.item(index).style.backgroundColor = "red";
-                },200*j);
-            })(i,j)
 
-          
-            
+                }, 200 * j);
+            })(k, j)
+
+
+
         }
-        
+
         i++;
         tempo_atual = cellLength;
-    
+
     }
 
-    
 
 }
 
-function sjf(){
+function procurarProcesso(tempo_atual){
 
-    console.log(processos);
+    var min = 999;
+    var index;
+
+    for(i = 0; i < processos.length; i++){
+
+        if(!processos[i].visitado){
+
+            if(processos[i].tempo_chegada < tempo_atual){
+                
+                if(processos[i].tempo_execucao < min){
+                    
+                    min = processos[i].tempo_chegada - tempo_atual;
+                    
+                    index = i;
+                }
+            }
+            
+      
+        }
+
+    }
+
+    console.log(processos[index]);
+
+    processos[index].visitado = true;
+
+    return index;
+
+}
+
+function roundRobin() {
+
+    quantum     = parseInt(document.getElementById("quantum").value);
+    sobrecarga  = parseInt(document.getElementById("sobrecarga").value);
 
     processos.sort(function (a, b) {
-        
+
         if (a.tempo_chegada > b.tempo_chegada) {
-          return 1;
+            return 1;
         }
-        
+
         if (a.tempo_chegada < b.tempo_chegada) {
-          return -1;
-        }
-        if(a.tempo_chegada == b.tempo_chegada){
-            if (a.tempo_execucao < b.tempo_execucao) {
-                return -1;
-            }
-            if(a.tempo_execucao > b.tempo_execucao){
-                return 1;
-            }
+            return -1;
         }
 
         return 0;
-      });
-      var processo = new Processo(0,0,0,0);
-      processo = processos[0];
-      
-      var table = document.getElementById('gantt');
-      var cells;
-      var cellLength;
-      var tempo_atual = 1;
-      var tamanho = processos.length;
+    });
 
-      while(tamanho > 0){
-          console.log("interacao");
+    var table = document.getElementById('gantt');
 
-        cellLength = tempo_atual + parseInt(processo.tempo_execucao);
-        
-        for( j = tempo_atual; j < cellLength; j++){
+    var tempo_atual = 4;
+    var cells;
+    var cellLength;
+    var soma = 0;
 
-            (function(index){
+    for (var j = 0; j < processos.length; j++) {
+        soma+= processos[j].tempo_execucao;
+    }
+
+
+    while (soma > 0) {
+        var i = 0;
+
+        while (i < processos.length) {
+
+            if(processos[i].tempo_execucao > 0 && processos[i].tempo_chegada < tempo_atual){
                 
-                setTimeout(function(){
-                    
-                    cells = table.rows.item(processo.id).cells;
-                    
-                    cellLength = tempo_atual + parseInt(processo.tempo_execucao);
-                    
-                    cells.item(index).style.backgroundColor = "red";
-                },200*j);
-            })(j)
-            
-        }
-
-        tempo_atual = cellLength;
-        
-        var aux = [];
-        var cont = 0;
-        var index;
-        for(k = 0; k < processos.length; k++){
-            if(processo.id == processos[k].id){
-                index=k;
-            }
-        }
-        console.log(index);
-        if (index > -1) {
-            processos.splice(index, 1);
-        }
-        console.log("processos");
-        console.log(processos);
-        for(var i = 0; i < processos.length; i++){
-
-            if(processos[i].tempo_chegada < tempo_atual + 1){
-                
-                aux[cont] = processos[i];
-                cont++;
-            }
-        }
-        console.log("valor de aux");
-         console.log(aux);
-
-        aux.sort(function (a, b) {
-        
-            if (a.tempo_execucao < b.tempo_execucao) {
-                return -1;
-            }
-            if(a.tempo_execucao > b.tempo_execucao){
-                return 1;
-            }
-            
+                if(quantum > processos[i].tempo_execucao)
+                    cellLength = tempo_atual + processos[i].tempo_execucao;
+                else
+                    cellLength = tempo_atual + quantum;
     
-            return 0;
-        });
+                for (j = tempo_atual; j < cellLength; j++) {
+        
+                    (function (i, index) {
+        
+                        setTimeout(function () {
+        
+                            cells = table.rows.item(processos[i].id).cells;
+        
+                            cells.item(index).style.backgroundColor = "red";
+                
+                        }, 350 * j);
+                    })(i, j)
 
 
-        tamanho--;
+                    if(j== cellLength - 1){
 
-        processo = aux[0];
+                        for (k = tempo_atual + 1; k < tempo_atual + sobrecarga + 1; k++) {
 
-        //console.log(aux[0]);
+                            (function (i, index, tExecucao) {
+            
+                                setTimeout(function () {
+                
+                                    cells = table.rows.item(processos[i].id).cells;
+                
+                                    if(tExecucao - quantum > 0){
+                                        cells.item(index + 1).style.backgroundColor = "gray";
+                                    }
+                        
+                                }, 350 * (k+1));
+                            })(i, k, processos[i].tempo_execucao)
+                        
+                        }
+                
+                    }
 
-      }
+                }
+
+                if(quantum > processos[i].tempo_execucao)
+                    soma -= processos[i].tempo_execucao;
+                else
+                    soma -= quantum;
+            
+                processos[i].tempo_execucao -= quantum;
+
+                if(processos[i].tempo_execucao > 0)
+                    tempo_atual = cellLength + sobrecarga;
+                else
+                    tempo_atual = cellLength;
+                
+                
+            }
+
+            i++;
+
+        }
+
+        
+    }
+
 
 
 }
 
-function roundRobin(){
+function edf() {
 
 
 }
 
-function edf(){
-
-
-}
-
-function escalonarProcessos(){
+function escalonarProcessos() {
 
     escalonamento = document.getElementById("escalonamentos").value;
- 
-    switch(escalonamento){
+
+    switch (escalonamento) {
 
         case "FIFO":
             fifo();
-        break;
+            break;
 
         case "SJF":
             sjf();
-        break;
+            break;
 
         case "Round Robin":
             roundRobin();
-        break;
+            break;
 
         case "EDF":
             edf();
-        break;
-        
+            break;
+
     }
 
 }
 
-function iniciar(){
+function iniciar() {
 
     deletarFields();
-  
+
     criarGraficoDeGantt();
 
     escalonarProcessos();
