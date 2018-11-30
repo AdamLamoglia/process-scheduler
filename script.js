@@ -138,7 +138,6 @@ function criarGraficoDeGantt() {
 
 }
 
-
 function fifo() {
 
     //ordena processos por tempo de chegada
@@ -250,33 +249,59 @@ function sjf() {
 
 }
 
-function procurarProcesso(tempo_atual){
+function procurarProcesso(tempo_atual) {
 
     var min = 999;
     var index;
 
-    for(i = 0; i < processos.length; i++){
+    if(escalonamento == "SJF"){
+        
+        for (i = 0; i < processos.length; i++) {
 
-        if(!processos[i].visitado){
+            if (!processos[i].visitado) {
+    
+                if (processos[i].tempo_chegada < tempo_atual - 3) {
+    
+                    if (processos[i].tempo_execucao < min) {
+    
+                        min = processos[i].tempo_chegada - tempo_atual;
+    
+                        index = i;
+                    }
+                }
+    
+            }
+    
+        }
 
-            if(processos[i].tempo_chegada < tempo_atual){
-                
-                if(processos[i].tempo_execucao < min){
-                    
-                    min = processos[i].tempo_chegada - tempo_atual;
-                    
+        //console.log(processos[index]);
+
+        processos[index].visitado = true;
+
+        return index;
+    }
+
+    //edf
+    for (i = 0; i < processos.length; i++) {
+
+        //if (!processos[i].visitado) {
+
+            if (processos[i].tempo_chegada < tempo_atual - 3) {
+
+                if (processos[i].deadline < min) {
+
+                    min = processos[i].deadline;
+
                     index = i;
                 }
             }
-            
-      
-        }
 
+        //}
     }
 
-    console.log(processos[index]);
+    //console.log(processos[index]);
 
-    processos[index].visitado = true;
+    //processos[index].visitado = true;
 
     return index;
 
@@ -284,8 +309,8 @@ function procurarProcesso(tempo_atual){
 
 function roundRobin() {
 
-    quantum     = parseInt(document.getElementById("quantum").value);
-    sobrecarga  = parseInt(document.getElementById("sobrecarga").value);
+    quantum = parseInt(document.getElementById("quantum").value);
+    sobrecarga = parseInt(document.getElementById("sobrecarga").value);
 
     processos.sort(function (a, b) {
 
@@ -308,7 +333,7 @@ function roundRobin() {
     var soma = 0;
 
     for (var j = 0; j < processos.length; j++) {
-        soma+= processos[j].tempo_execucao;
+        soma += processos[j].tempo_execucao;
     }
 
 
@@ -317,70 +342,70 @@ function roundRobin() {
 
         while (i < processos.length) {
 
-            if(processos[i].tempo_execucao > 0 && processos[i].tempo_chegada < tempo_atual){
-                
-                if(quantum > processos[i].tempo_execucao)
+            if (processos[i].tempo_execucao > 0 && processos[i].tempo_chegada < tempo_atual - 3) {
+
+                if (quantum > processos[i].tempo_execucao)
                     cellLength = tempo_atual + processos[i].tempo_execucao;
                 else
                     cellLength = tempo_atual + quantum;
-    
+
                 for (j = tempo_atual; j < cellLength; j++) {
-        
+
                     (function (i, index) {
-        
+
                         setTimeout(function () {
-        
+
                             cells = table.rows.item(processos[i].id).cells;
-        
+
                             cells.item(index).style.backgroundColor = "red";
-                
+
                         }, 350 * j);
                     })(i, j)
 
 
-                    if(j== cellLength - 1){
-
-                        for (k = tempo_atual + 1; k < tempo_atual + sobrecarga + 1; k++) {
-
+                    if (j == cellLength - 1) {
+                
+                        for (k = j + 1; k < cellLength + sobrecarga; k++) {
+                            
                             (function (i, index, tExecucao) {
-            
+
                                 setTimeout(function () {
-                
+
                                     cells = table.rows.item(processos[i].id).cells;
-                
-                                    if(tExecucao - quantum > 0){
-                                        cells.item(index + 1).style.backgroundColor = "gray";
+
+                                    if (tExecucao - quantum > 0) {
+                                        cells.item(index).style.backgroundColor = "gray";
                                     }
-                        
-                                }, 350 * (k+1));
+
+                                }, 350 * (k));
                             })(i, k, processos[i].tempo_execucao)
-                        
+
                         }
-                
+
                     }
 
                 }
 
-                if(quantum > processos[i].tempo_execucao)
+                if (quantum > processos[i].tempo_execucao)
                     soma -= processos[i].tempo_execucao;
                 else
                     soma -= quantum;
-            
+
                 processos[i].tempo_execucao -= quantum;
 
-                if(processos[i].tempo_execucao > 0)
+                if (processos[i].tempo_execucao > 0)
                     tempo_atual = cellLength + sobrecarga;
                 else
                     tempo_atual = cellLength;
-                
-                
+
+
             }
 
             i++;
 
         }
 
-        
+
     }
 
 
@@ -388,6 +413,110 @@ function roundRobin() {
 }
 
 function edf() {
+
+    quantum = parseInt(document.getElementById("quantum").value);
+    sobrecarga = parseInt(document.getElementById("sobrecarga").value);
+
+    processos.sort(function (a, b) {
+
+        if (a.deadline > b.deadline) {
+            return 1;
+        }
+        if (a.deadline < b.deadline) {
+            return -1;
+        }
+
+        return 0;
+    });
+
+    var table = document.getElementById('gantt');
+
+    var tempo_atual = 4;
+
+    var i = 0;
+    var cells;
+    var cellLength;
+    var soma = 0;
+
+    for (var j = 0; j < processos.length; j++) {
+        soma += processos[j].tempo_execucao;
+    }
+
+    while (soma > 0) {
+        var i = 0;
+
+        while (i < processos.length) {
+            
+            m =  procurarProcesso(tempo_atual);
+            console.log("fudeu");
+            
+            if (processos[m].tempo_execucao > 0 && processos[m].tempo_chegada < tempo_atual - 3) {
+                console.log("entrei");
+
+                if (quantum > processos[m].tempo_execucao)
+                    cellLength = tempo_atual + processos[m].tempo_execucao;
+                else
+                    cellLength = tempo_atual + quantum;
+
+                for (j = tempo_atual; j < cellLength; j++) {
+
+                    (function (m, index) {
+
+                        setTimeout(function () {
+
+                            cells = table.rows.item(processos[m].id).cells;
+
+                            cells.item(index).style.backgroundColor = "red";
+
+                        }, 350 * j);
+                    })(m, j)
+
+
+                    if (j == cellLength - 1) {
+    
+                        for (k = j + 1; k < cellLength + sobrecarga; k++) {
+                            
+                            (function (m, index, tExecucao) {
+
+                                setTimeout(function () {
+
+                                    cells = table.rows.item(processos[m].id).cells;
+
+                                    if (tExecucao - quantum > 0) {
+                                        cells.item(index).style.backgroundColor = "gray";
+                                    }
+
+                                }, 350 * (k));
+                            })(m, k, processos[m].tempo_execucao)
+
+                        }
+
+                    }
+
+                }
+
+                if (quantum > processos[m].tempo_execucao)
+                    soma -= processos[m].tempo_execucao;
+                else
+                    soma -= quantum;
+
+                processos[m].tempo_execucao -= quantum;
+
+                if (processos[m].tempo_execucao > 0)
+                    tempo_atual = cellLength + sobrecarga;
+                else
+                    tempo_atual = cellLength;
+
+            }
+
+            i++;
+
+        }
+
+
+    }
+
+
 
 
 }
