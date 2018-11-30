@@ -84,6 +84,7 @@ function deletarFields() {
 }
 
 function criarGraficoDeGantt() {
+
     var time;
 
     timeline = document.getElementById("tempo");
@@ -136,6 +137,20 @@ function criarGraficoDeGantt() {
 
     }
 
+    //labels  = document.getElementById("legendas");
+
+    timeline = document.getElementById("corExec");
+
+    time = timeline.insertCell(0);
+    time.innerHTML = "Executando";
+    time.style.backgroundColor = "red";
+
+    timeline = document.getElementById("corTC");
+
+    time = timeline.insertCell(0);
+    time.innerHTML = "Troca de contexto";
+    time.style.backgroundColor = "gray";
+
 }
 
 function fifo() {
@@ -156,7 +171,7 @@ function fifo() {
 
     var table = document.getElementById('gantt');
 
-    var tempo_atual = 4;
+    var tempo_atual = 4 + processos[0].tempo_chegada;
     var i = 0;
     var cells;
     var cellLength;
@@ -187,8 +202,6 @@ function fifo() {
         tempo_atual = cellLength;
 
     }
-
-
 
 }
 
@@ -252,29 +265,27 @@ function sjf() {
 function procurarProcesso(tempo_atual) {
 
     var min = 999;
-    var index;
+    var index = -1;
 
-    if(escalonamento == "SJF"){
-        
+    if (escalonamento == "SJF") {
+
         for (i = 0; i < processos.length; i++) {
 
             if (!processos[i].visitado) {
-    
+
                 if (processos[i].tempo_chegada < tempo_atual - 3) {
-    
+
                     if (processos[i].tempo_execucao < min) {
-    
+
                         min = processos[i].tempo_chegada - tempo_atual;
-    
+
                         index = i;
                     }
                 }
-    
-            }
-    
-        }
 
-        //console.log(processos[index]);
+            }
+
+        }
 
         processos[index].visitado = true;
 
@@ -284,7 +295,7 @@ function procurarProcesso(tempo_atual) {
     //edf
     for (i = 0; i < processos.length; i++) {
 
-        //if (!processos[i].visitado) {
+        if (!processos[i].visitado) {
 
             if (processos[i].tempo_chegada < tempo_atual - 3) {
 
@@ -296,12 +307,8 @@ function procurarProcesso(tempo_atual) {
                 }
             }
 
-        //}
+        }
     }
-
-    //console.log(processos[index]);
-
-    //processos[index].visitado = true;
 
     return index;
 
@@ -364,9 +371,9 @@ function roundRobin() {
 
 
                     if (j == cellLength - 1) {
-                
+
                         for (k = j + 1; k < cellLength + sobrecarga; k++) {
-                            
+
                             (function (i, index, tExecucao) {
 
                                 setTimeout(function () {
@@ -446,73 +453,76 @@ function edf() {
         var i = 0;
 
         while (i < processos.length) {
-            
-            m =  procurarProcesso(tempo_atual);
-            console.log("fudeu");
-            
-            if (processos[m].tempo_execucao > 0 && processos[m].tempo_chegada < tempo_atual - 3) {
-                console.log("entrei");
 
-                if (quantum > processos[m].tempo_execucao)
-                    cellLength = tempo_atual + processos[m].tempo_execucao;
-                else
-                    cellLength = tempo_atual + quantum;
+            m = procurarProcesso(tempo_atual);
 
-                for (j = tempo_atual; j < cellLength; j++) {
+            if (m != -1) {
 
-                    (function (m, index) {
+                if (processos[m].tempo_execucao > 0 && processos[m].tempo_chegada < tempo_atual - 3) {
 
-                        setTimeout(function () {
+                    if (quantum > processos[m].tempo_execucao)
+                        cellLength = tempo_atual + processos[m].tempo_execucao;
+                    else
+                        cellLength = tempo_atual + quantum;
 
-                            cells = table.rows.item(processos[m].id).cells;
+                    for (j = tempo_atual; j < cellLength; j++) {
 
-                            cells.item(index).style.backgroundColor = "red";
+                        (function (m, index) {
 
-                        }, 350 * j);
-                    })(m, j)
+                            setTimeout(function () {
+
+                                cells = table.rows.item(processos[m].id).cells;
+
+                                cells.item(index).style.backgroundColor = "red";
+
+                            }, 350 * j);
+                        })(m, j)
 
 
-                    if (j == cellLength - 1) {
-    
-                        for (k = j + 1; k < cellLength + sobrecarga; k++) {
-                            
-                            (function (m, index, tExecucao) {
+                        if (j == cellLength - 1) {
 
-                                setTimeout(function () {
+                            for (k = j + 1; k < cellLength + sobrecarga; k++) {
 
-                                    cells = table.rows.item(processos[m].id).cells;
+                                (function (m, index, tExecucao) {
 
-                                    if (tExecucao - quantum > 0) {
-                                        cells.item(index).style.backgroundColor = "gray";
-                                    }
+                                    setTimeout(function () {
 
-                                }, 350 * (k));
-                            })(m, k, processos[m].tempo_execucao)
+                                        cells = table.rows.item(processos[m].id).cells;
+
+                                        if (tExecucao - quantum > 0) {
+                                            cells.item(index).style.backgroundColor = "gray";
+                                        }
+
+                                    }, 350 * (k));
+                                })(m, k, processos[m].tempo_execucao)
+
+                            }
 
                         }
 
                     }
 
+                    if (quantum > processos[m].tempo_execucao)
+                        soma -= processos[m].tempo_execucao;
+                    else
+                        soma -= quantum;
+
+                    processos[m].tempo_execucao -= quantum;
+
+                    if (processos[m].tempo_execucao > 0)
+                        tempo_atual = cellLength + sobrecarga;
+                    else {
+                        tempo_atual = cellLength;
+                        processos[m].visitado = true;
+                    }
+
                 }
-
-                if (quantum > processos[m].tempo_execucao)
-                    soma -= processos[m].tempo_execucao;
-                else
-                    soma -= quantum;
-
-                processos[m].tempo_execucao -= quantum;
-
-                if (processos[m].tempo_execucao > 0)
-                    tempo_atual = cellLength + sobrecarga;
-                else
-                    tempo_atual = cellLength;
-
             }
+
 
             i++;
 
         }
-
 
     }
 
