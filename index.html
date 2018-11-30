@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Escalonador de Processos</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="style.css">
     <script src="script.js"></script>
     <style>
         table, th, td {
@@ -47,23 +48,41 @@
     
     <button type="button" onclick="iniciar()">Iniciar</button><br><br>
 
-    
-    <table id='gantt' style="width:95%" align="right">
-        <tr id='tempo'>
-    
-        </tr>
-    </table>
+    <div id="tabela">
+        <table id='gantt' style="width:95%" align="right">
+            <tr id='tempo'>
+        
+            </tr>
+        </table>
+    </div>
+
 
     <div id="legendas">
-        <table id='executando' style="width:95%" align="right">
+        <table id='executando' style="width:10%" align="left">
             <tr id='corExec'>
         
             </tr>
         </table>
 
-        <table id='trocaContexto' style="width:95%" align="right">
+        <table id='trocaContexto' style="width:10%" align="left">
             <tr id='corTC'>
         
+            </tr>
+        </table>
+    </div>
+
+    <div id="tabelaDisco">
+        <table id='disco' style="width:35%" align="left">
+            <caption>Disco</caption>
+            <tr id='discoProcessos'>
+            </tr>
+        </table>
+    </div>
+
+    <div id="tabelaRam">
+        <table id='ram' style="width:35%" align="right">
+            <caption>Ram</caption>
+            <tr id='ramProcessos'>
             </tr>
         </table>
     </div>
