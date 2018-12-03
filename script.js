@@ -345,22 +345,76 @@ function referenciarProcessos(tempo) {
 
     for (var j = 0; j < processos.length; j++) {
 
-        if (!processos[j].estaNoDisco) {
+        if (!processos[j].estaNoDisco && !processos[j].estaNaRam) {
 
             if (processos[j].tempo_chegada < tempo - 3) {
 
                 (function (j, tempo) {
 
                     setTimeout(function () {
+                        referenciarPagRam(processos[j].id);
                         referenciarPagDisco(processos[j].id);
                     }, 800 * tempo);
                 })(j, tempo)
-
-                processos[j].estaNoDisco = true;
+    
+                processos[j].estaNaRam = processos[j].estaNoDisco = true;
             }
+                
         }
     }
+}
 
+
+function pintarPaginas(id) {
+
+    var table = document.getElementById('ram');
+    var cells;
+    var lugar;
+
+    cells = table.rows.item(1).cells;
+
+
+    //encontra coluna livre
+    for (var i = 0; i < 10; i++) {
+
+        if (cells.item(i).innerHTML == "P" + (id - 1)) {
+            lugar = i;
+            break;
+        }
+
+    }
+
+    //escreve na coluna livre
+    for (var i = 1; i <= 7; i++) {
+        cells = table.rows.item(i).cells;
+        cells.item(lugar).style.backgroundColor = "green";
+    }
+}
+
+function descolorirPagRam(id) {
+
+    var table = document.getElementById('ram');
+    var cells;
+    var lugar;
+
+    cells = table.rows.item(1).cells;
+
+
+    //encontra coluna livre
+    for (var i = 0; i < 10; i++) {
+
+        if (cells.item(i).innerHTML == "P" + (id - 1)) {
+            lugar = i;
+            break;
+        }
+
+    }
+
+    //escreve na coluna livre
+    for (var i = 1; i <= 7; i++) {
+        cells = table.rows.item(i).cells;
+        cells.item(lugar).style.backgroundColor = "white";
+    }
 }
 
 function pintarGrafico(id_processo, tempo) {
@@ -372,12 +426,7 @@ function pintarGrafico(id_processo, tempo) {
 
             cells.item(tempo).style.backgroundColor = "blue";
 
-            if (!processos[id_processo].estaNaRam) {
-
-                referenciarPagRam(processos[id_processo].id);
-
-                processos[id_processo].estaNaRam = true;
-            }
+            pintarPaginas(processos[id_processo].id);
 
         }, 800 * tempo);
     })(id_processo, tempo)
@@ -386,6 +435,10 @@ function pintarGrafico(id_processo, tempo) {
 function retirarProcessoRamDisco(id_processo, tempo) {
 
     (function (id_processo, tempo) {
+
+        setTimeout(function () {
+            descolorirPagRam(processos[id_processo].id);
+        }, 800 * tempo);
 
         setTimeout(function () {
             retirarPagDaRam(processos[id_processo].id);
@@ -450,11 +503,11 @@ function fifo() {
         (function (tempo) {
 
             setTimeout(function () {
-                tempo_real.innerHTML = "Tempo: "+(tempo-3);
+                tempo_real.innerHTML = "Tempo: " + (tempo - 3);
             }, 800 * tempo);
         })(tempo)
 
-        
+
 
         tempo++;
     }
@@ -477,7 +530,7 @@ function sjf() {
     });
 
     table = document.getElementById('gantt');
-    
+
     tempo_real = table.createCaption();
 
     var soma = 4;
@@ -503,8 +556,7 @@ function sjf() {
             processos[id_processo].tempo_execucao--;
 
             if (processos[id_processo].tempo_execucao == 0) {
-                console.log(id_processo);
-
+    
                 retirarProcessoRamDisco(id_processo, tempo);
 
                 processos[id_processo].executando = false;
@@ -516,7 +568,7 @@ function sjf() {
         (function (tempo) {
 
             setTimeout(function () {
-                tempo_real.innerHTML = "Tempo: "+(tempo-3);
+                tempo_real.innerHTML = "Tempo: " + (tempo - 3);
             }, 800 * tempo);
         })(tempo)
 
@@ -524,7 +576,6 @@ function sjf() {
     }
 
 }
-
 
 function procurarProcesso(tempo_atual) {
 
@@ -550,15 +601,15 @@ function procurarProcesso(tempo_atual) {
 
         for (i = 0; i < processos.length; i++) {
 
-            if(processos[i].visitado)
+            if (processos[i].visitado)
                 continue;
 
-            if(processos[i].executando){
+            if (processos[i].executando) {
                 index = i;
                 break;
             }
-                
-            if (processos[i].tempo_chegada < tempo_atual - 3  && processos[i].tempo_execucao > 0) {
+
+            if (processos[i].tempo_chegada < tempo_atual - 3 && processos[i].tempo_execucao > 0) {
 
                 if (processos[i].tempo_execucao < min) {
 
@@ -570,8 +621,8 @@ function procurarProcesso(tempo_atual) {
 
         }
 
-        if(index != -1)
-        processos[index].executando = true;
+        if (index != -1)
+            processos[index].executando = true;
 
         return index;
     }
@@ -737,14 +788,14 @@ function edf() {
         var i = 0;
 
         while (i < processos.length) {
-            
+
             m = procurarProcesso(tempo_atual);
 
             if (m != -1) {
 
 
                 if (processos[m].tempo_execucao > 0 && processos[m].tempo_chegada < tempo_atual - 3) {
-                   
+
 
                     if (quantum > processos[m].tempo_execucao)
                         cellLength = tempo_atual + processos[m].tempo_execucao;
@@ -802,7 +853,7 @@ function edf() {
                         processos[m].visitado = true;
                     }
 
-                
+
                 }
 
                 else
@@ -811,9 +862,9 @@ function edf() {
 
             }
 
-            else 
+            else
                 tempo_atual++;
-    
+
 
             i++;
         }
