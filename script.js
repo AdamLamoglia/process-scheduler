@@ -8,7 +8,8 @@ var tempos_chegada = [],
     prioridades = [],
     tempos_execucao = [],
     deadlines = [],
-    processos = [];
+    processos = [],
+    paginas = [];
 
 var table;
 var cells;
@@ -26,6 +27,15 @@ class Processo {
         this.estaNoDisco = false;
         this.executando = false;
         this.estaNaRam = false;
+        this.rr = false;
+    }
+}
+
+class Pagina {
+
+    constructor(linha, coluna) {
+        this.linha = linha;
+        this.coluna = coluna;
     }
 }
 
@@ -87,6 +97,11 @@ function deletarFields() {
         processos[i] = new Processo(parseInt(document.getElementById("tchegada" + i).value), parseInt(document.getElementById("texec" + i).value),
             parseInt(document.getElementById("deadline" + i).value), i + 1, false, false);
 
+    }
+
+    for (i = 0; i < 7; i++) {
+
+        paginas[i] = new Pagina(-1, -1);
     }
 
     var div = document.getElementById('container');
@@ -188,7 +203,7 @@ function criarDisco() {
 
 
         //Cria colunas para cada linha
-        for (j = 0; j < 10; j++) {
+        for (j = 0; j < 13; j++) {
 
             time = row.insertCell(-1);
             time.innerHTML = "-";
@@ -202,7 +217,8 @@ function criarDisco() {
 
 function criarRam() {
 
-    var time;
+    var time,
+        row;
 
     table = document.getElementById('ram');
 
@@ -211,49 +227,61 @@ function criarRam() {
     nome.innerHTML = "Ram";
 
     //Cria linhas
-    for (i = 0; i < 7; i++) {
+    for (i = 0; i < 10; i++) {
 
         table = document.getElementById("ram");
 
-        var row = table.insertRow(-1);
+        row = table.insertRow(-1);
 
 
         //Cria colunas para cada linha
-        for (j = 0; j < 7; j++) {
+        for (j = 0; j < 5; j++) {
 
             time = row.insertCell(-1);
             time.innerHTML = "-";
             time.width = "90px"
         }
 
-    }
 
+    }
 
 }
 
 function referenciarPagDisco(id) {
 
+
     var table = document.getElementById('disco');
-    var cells;
-    var lugar;
+    var cells,
+        lugar = 0;
 
-    cells = table.rows.item(1).cells;
+    //encontra local livre
+    for (var j = 0; j < 13; j++) {
 
-
-    //encontra coluna livre
-    for (var i = 0; i < 10; i++) {
-
-        if (cells.item(i).innerHTML == "-") {
-            lugar = i;
+        if (lugar == paginas.length)
             break;
+
+        for (var i = 1; i <= 7; i++) {
+
+            cells = table.rows.item(i).cells;
+
+            if (lugar == paginas.length)
+                break;
+
+            if (cells.item(j).innerHTML == "-") {
+                paginas[lugar].linha = i;
+                paginas[lugar].coluna = j;
+                lugar++;
+
+            }
+
         }
 
     }
 
-    //escreve na coluna livre
-    for (var i = 1; i <= 7; i++) {
-        cells = table.rows.item(i).cells;
-        cells.item(lugar).innerHTML = "P" + (id - 1);
+    //escreve no local livre
+    for (var i = 0; i < paginas.length; i++) {
+        cells = table.rows.item(paginas[i].linha).cells;
+        cells.item(paginas[i].coluna).innerHTML = "P" + (id - 1);
     }
 
 
@@ -262,54 +290,79 @@ function referenciarPagDisco(id) {
 function retirarPagDisco(id) {
 
     var table = document.getElementById('disco');
-    var cells;
-    var lugar;
+    var cells,
+        lugar = 0;
 
-    cells = table.rows.item(1).cells;
+    //encontra local livre
+    for (var j = 0; j < 13; j++) {
 
-
-    //encontra coluna livre
-    for (var i = 0; i < 10; i++) {
-
-        if (cells.item(i).innerHTML == "P" + (id - 1)) {
-            lugar = i;
+        if (lugar == paginas.length)
             break;
+
+        for (var i = 1; i <= 7; i++) {
+
+            cells = table.rows.item(i).cells;
+
+            if (lugar == paginas.length)
+                break;
+
+            if (cells.item(j).innerHTML == "P" + (id - 1)) {
+                paginas[lugar].linha = i;
+                paginas[lugar].coluna = j;
+                lugar++;
+
+            }
+
         }
 
     }
 
-    //escreve na coluna livre
-    for (var i = 1; i <= 7; i++) {
-        cells = table.rows.item(i).cells;
-        cells.item(lugar).innerHTML = "-";
+    //escreve no local livre
+    for (var i = 0; i < paginas.length; i++) {
+        cells = table.rows.item(paginas[i].linha).cells;
+        cells.item(paginas[i].coluna).innerHTML = "-";
     }
+
+
 }
 
 function referenciarPagRam(id) {
 
     var table = document.getElementById('ram');
-    var cells;
-    var lugar;
+    var cells,
+        lugar = 0;
 
-    cells = table.rows.item(1).cells;
+    //encontra local livre
+    for (var j = 0; j < 5; j++) {
 
-
-    //encontra coluna livre
-    for (var i = 0; i < 7; i++) {
-
-        if (cells.item(i).innerHTML == "-") {
-
-            lugar = i;
+        if (lugar == paginas.length)
             break;
+
+        for (var i = 1; i <= 10; i++) {
+
+            cells = table.rows.item(i).cells;
+
+            if (lugar == paginas.length)
+                break;
+
+            if (cells.item(j).innerHTML == "-") {
+                paginas[lugar].linha = i;
+                paginas[lugar].coluna = j;
+                lugar++;
+
+            }
+
         }
 
     }
 
+    if (lugar < 7)
+        return;
 
-    //escreve na coluna livre
-    for (var i = 1; i <= 7; i++) {
-        cells = table.rows.item(i).cells;
-        cells.item(lugar).innerHTML = "P" + (id - 1);
+    //escreve no local livre
+    for (var i = 0; i < paginas.length; i++) {
+        cells = table.rows.item(paginas[i].linha).cells;
+        cells.item(paginas[i].coluna).innerHTML = "P" + (id - 1);
     }
 
 
@@ -318,27 +371,75 @@ function referenciarPagRam(id) {
 function retirarPagDaRam(id) {
 
     var table = document.getElementById('ram');
-    var cells;
-    var lugar;
+    var cells,
+        lugar = 0;
 
-    cells = table.rows.item(1).cells;
+    //encontra local livre
+    for (var j = 0; j < 5; j++) {
 
-
-    //encontra coluna livre
-    for (var i = 0; i < 10; i++) {
-
-        if (cells.item(i).innerHTML == "P" + (id - 1)) {
-            lugar = i;
+        if (lugar == paginas.length)
             break;
+
+        for (var i = 1; i <= 10; i++) {
+
+            cells = table.rows.item(i).cells;
+
+            if (lugar == paginas.length)
+                break;
+
+            if (cells.item(j).innerHTML == "P" + (id - 1)) {
+                paginas[lugar].linha = i;
+                paginas[lugar].coluna = j;
+                lugar++;
+
+            }
+
         }
 
     }
 
-    //escreve na coluna livre
-    for (var i = 1; i <= 7; i++) {
-        cells = table.rows.item(i).cells;
-        cells.item(lugar).innerHTML = "-";
+    //escreve no local livre
+    for (var i = 0; i < paginas.length; i++) {
+        cells = table.rows.item(paginas[i].linha).cells;
+        cells.item(paginas[i].coluna).innerHTML = "-";
     }
+
+}
+
+function pageFault() {
+
+    var table = document.getElementById('disco');
+    var cells,
+        lugar = 0;
+
+    //encontra local livre
+    for (var j = 0; j < 13; j++) {
+
+        if (lugar == paginas.length)
+            break;
+
+        for (var i = 1; i <= 7; i++) {
+
+            cells = table.rows.item(i).cells;
+
+            if (lugar == paginas.length)
+                break;
+
+            if (cells.item(j).innerHTML == "-") {
+                //paginas[lugar].linha = i;
+                //paginas[lugar].coluna = j;
+                lugar++;
+
+            }
+
+        }
+
+    }
+
+    if (lugar < 7)
+        return true;
+
+    return false;
 }
 
 function referenciarProcessos(tempo) {
@@ -347,74 +448,106 @@ function referenciarProcessos(tempo) {
 
         if (!processos[j].estaNoDisco && !processos[j].estaNaRam) {
 
-            if (processos[j].tempo_chegada < tempo - 3) {
+            if (processos[j].tempo_chegada < tempo - 3 && processos[j].tempo_execucao > 0) {
 
                 (function (j, tempo) {
 
                     setTimeout(function () {
-                        referenciarPagRam(processos[j].id);
+
+                        if (!pageFault())
+                            referenciarPagRam(processos[j].id);
                         referenciarPagDisco(processos[j].id);
+
                     }, 800 * tempo);
                 })(j, tempo)
-    
+
                 processos[j].estaNaRam = processos[j].estaNoDisco = true;
             }
-                
+
         }
     }
 }
-
 
 function pintarPaginas(id) {
 
     var table = document.getElementById('ram');
-    var cells;
-    var lugar;
+    var cells,
+        lugar = 0;
 
-    cells = table.rows.item(1).cells;
+    //encontra local livre
+    for (var j = 0; j < 5; j++) {
 
-
-    //encontra coluna livre
-    for (var i = 0; i < 10; i++) {
-
-        if (cells.item(i).innerHTML == "P" + (id - 1)) {
-            lugar = i;
+        if (lugar == paginas.length)
             break;
+
+        for (var i = 1; i <= 10; i++) {
+
+            cells = table.rows.item(i).cells;
+
+            if (lugar == paginas.length)
+                break;
+
+            if (cells.item(j).innerHTML == "P" + (id - 1)) {
+                paginas[lugar].linha = i;
+                paginas[lugar].coluna = j;
+                lugar++;
+
+            }
+
         }
 
     }
 
-    //escreve na coluna livre
-    for (var i = 1; i <= 7; i++) {
-        cells = table.rows.item(i).cells;
-        cells.item(lugar).style.backgroundColor = "green";
+    if(lugar < 7)
+        return false;
+
+    //escreve no local livre
+    for (var i = 0; i < paginas.length; i++) {
+        cells = table.rows.item(paginas[i].linha).cells;
+        cells.item(paginas[i].coluna).style.backgroundColor = "green";
     }
+
+    return true;
 }
 
 function descolorirPagRam(id) {
 
+
     var table = document.getElementById('ram');
-    var cells;
-    var lugar;
+    var cells,
+        lugar = 0;
 
-    cells = table.rows.item(1).cells;
+    //encontra local livre
+    for (var j = 0; j < 5; j++) {
 
-
-    //encontra coluna livre
-    for (var i = 0; i < 10; i++) {
-
-        if (cells.item(i).innerHTML == "P" + (id - 1)) {
-            lugar = i;
+        if (lugar == paginas.length)
             break;
+
+        for (var i = 1; i <= 10; i++) {
+
+            cells = table.rows.item(i).cells;
+
+            if (lugar == paginas.length)
+                break;
+
+            if (cells.item(j).innerHTML == "P" + (id - 1)) {
+                paginas[lugar].linha = i;
+                paginas[lugar].coluna = j;
+                lugar++;
+
+            }
+
         }
 
     }
 
-    //escreve na coluna livre
-    for (var i = 1; i <= 7; i++) {
-        cells = table.rows.item(i).cells;
-        cells.item(lugar).style.backgroundColor = "white";
+    //escreve no local livre
+    for (var i = 0; i < paginas.length; i++) {
+        cells = table.rows.item(paginas[i].linha).cells;
+        cells.item(paginas[i].coluna).style.backgroundColor = "white";
     }
+
+
 }
 
 function pintarGrafico(id_processo, tempo) {
@@ -426,7 +559,23 @@ function pintarGrafico(id_processo, tempo) {
 
             cells.item(tempo).style.backgroundColor = "blue";
 
-            pintarPaginas(processos[id_processo].id);
+            if(!pintarPaginas(processos[id_processo].id)){
+                referenciarPagRam(processos[id_processo].id);
+                pintarPaginas(processos[id_processo].id);
+            }
+
+        }, 800 * tempo);
+    })(id_processo, tempo)
+}
+
+function pintarSobrecarga(id_processo, tempo){
+
+    (function (id_processo, tempo) {
+        setTimeout(function () {
+
+            cells = table.rows.item(processos[id_processo].id).cells;
+
+            cells.item(tempo).style.backgroundColor = "red";
 
         }, 800 * tempo);
     })(id_processo, tempo)
@@ -440,14 +589,19 @@ function retirarProcessoRamDisco(id_processo, tempo) {
             descolorirPagRam(processos[id_processo].id);
         }, 800 * tempo);
 
-        setTimeout(function () {
-            retirarPagDaRam(processos[id_processo].id);
-        }, 800 * tempo);
+        if (escalonamento == "SJF" || escalonamento == "FIFO") {
 
-        setTimeout(function () {
-            retirarPagDisco(processos[id_processo].id);
-        }, 800 * tempo);
+            setTimeout(function () {
+                retirarPagDaRam(processos[id_processo].id);
+            }, 800 * tempo);
+
+            setTimeout(function () {
+                retirarPagDisco(processos[id_processo].id);
+            }, 800 * tempo);
+        }
+
     })(id_processo, tempo)
+
 }
 
 function fifo() {
@@ -556,7 +710,7 @@ function sjf() {
             processos[id_processo].tempo_execucao--;
 
             if (processos[id_processo].tempo_execucao == 0) {
-    
+
                 retirarProcessoRamDisco(id_processo, tempo);
 
                 processos[id_processo].executando = false;
@@ -582,7 +736,22 @@ function procurarProcesso(tempo_atual) {
     var min = 999;
     var index = -1;
 
-    if (escalonamento == "FIFO") {
+    if (escalonamento == "FIFO" || escalonamento == "Round Robin") {
+
+        for (i = 0; i < processos.length; i++) {
+
+            if (processos[i].tempo_chegada < tempo_atual - 3 && processos[i].tempo_execucao > 0) {
+
+                index = i;
+                break;
+            }
+
+        }
+
+        return index;
+    }
+
+    if (escalonamento == "Round Robin") {
 
         for (i = 0; i < processos.length; i++) {
 
@@ -651,7 +820,76 @@ function procurarProcesso(tempo_atual) {
 
 function roundRobin() {
 
-    quantum = parseInt(document.getElementById("quantum").value);
+    /*processos.sort(function (a, b) {
+
+        if (a.tempo_chegada > b.tempo_chegada) {
+            return 1;
+        }
+
+        if (a.tempo_chegada < b.tempo_chegada) {
+            return -1;
+        }
+
+        return 0;
+    });
+
+    var table = document.getElementById('gantt');
+
+    tempo_real = table.createCaption();
+
+    var soma = 4;
+    var execucoes = 4;
+    var tempo = 4;
+
+    for (var j = 0; j < processos.length; j++) {
+        soma += processos[j].tempo_execucao;
+    }
+
+    while (soma > execucoes) {
+
+        referenciarProcessos(tempo);
+
+        var id_processo = procurarProcesso(tempo);
+
+        if (id_processo != -1 && processos[id_processo].tempo_execucao > 0) {
+
+           // if(quantum == 0){
+
+             //   pintarSobrecarga(id_processo, tempo);
+               // quantum = parseInt(document.getElementById("quantum").value);
+                //processos[id_processo].executando = false;
+                //processos[id_processo].rr = true;
+                //continue;
+            //}
+
+            processos[id_processo].executando = true;
+
+            pintarGrafico(id_processo, tempo);
+
+            processos[id_processo].tempo_execucao--;
+            quantum--;
+
+            if (processos[id_processo].tempo_execucao == 0) {
+
+                retirarProcessoRamDisco(id_processo, tempo);
+            }
+
+            execucoes++;
+        }
+
+        (function (tempo) {
+
+            setTimeout(function () {
+                tempo_real.innerHTML = "Tempo: " + (tempo - 3);
+            }, 800 * tempo);
+        })(tempo)
+
+
+
+        tempo++;
+    }*/
+    
+    var quantum_atual = quantum = parseInt(document.getElementById("quantum").value);
     sobrecarga = parseInt(document.getElementById("sobrecarga").value);
 
     processos.sort(function (a, b) {
@@ -667,92 +905,69 @@ function roundRobin() {
         return 0;
     });
 
-    var table = document.getElementById('gantt');
 
-    var tempo_atual = 4 + processos[0].tempo_chegada;
-    var cells;
-    var cellLength;
-    var soma = 0;
+    table = document.getElementById('gantt');
+
+    tempo_real = table.createCaption();
+
+    var soma = 4;
+    var execucoes = 4;
+    var tempo = 4;
 
     for (var j = 0; j < processos.length; j++) {
         soma += processos[j].tempo_execucao;
     }
 
+    while (soma > execucoes) {
 
-    while (soma > 0) {
-        var i = 0;
+        referenciarProcessos(tempo);
 
-        while (i < processos.length) {
+        var id_processo = procurarProcesso(tempo);
 
-            if (processos[i].tempo_execucao > 0 && processos[i].tempo_chegada < tempo_atual - 3) {
+        if (id_processo != -1 && processos[id_processo].tempo_execucao > 0) {
 
-                if (quantum > processos[i].tempo_execucao)
-                    cellLength = tempo_atual + processos[i].tempo_execucao;
-                else
-                    cellLength = tempo_atual + quantum;
+            if(quantum_atual == 0){
 
-                for (j = tempo_atual; j < cellLength; j++) {
-
-                    (function (i, index) {
-
-                        setTimeout(function () {
-
-                            cells = table.rows.item(processos[i].id).cells;
-
-                            cells.item(index).style.backgroundColor = "blue";
-
-                        }, 350 * j);
-                    })(i, j)
-
-
-                    if (j == cellLength - 1) {
-
-                        for (k = j + 1; k < cellLength + sobrecarga; k++) {
-
-                            (function (i, index, tExecucao) {
-
-                                setTimeout(function () {
-
-                                    cells = table.rows.item(processos[i].id).cells;
-
-                                    if (tExecucao - quantum > 0) {
-                                        cells.item(index).style.backgroundColor = "red";
-                                    }
-
-                                }, 350 * (k));
-                            })(i, k, processos[i].tempo_execucao)
-
-                        }
-
-                    }
-
-                }
-
-                if (quantum > processos[i].tempo_execucao)
-                    soma -= processos[i].tempo_execucao;
-                else
-                    soma -= quantum;
-
-                processos[i].tempo_execucao -= quantum;
-
-                if (processos[i].tempo_execucao > 0)
-                    tempo_atual = cellLength + sobrecarga;
-                else
-                    tempo_atual = cellLength;
-
-
+                   pintarSobrecarga(id_processo, tempo);
+                   quantum_atual = quantum;
+                   //processos[id_processo].executando = false;
+                   //processos[id_processo].rr = true;
+                   tempo++;
+                   continue;
             }
 
-            i++;
+            processos[id_processo].executando = true;
 
+            pintarGrafico(id_processo, tempo);
+
+            processos[id_processo].tempo_execucao--;
+
+            if (processos[id_processo].tempo_execucao == 0) {
+
+                retirarProcessoRamDisco(id_processo, tempo);
+            }
+
+            quantum_atual--;
+            execucoes++;
         }
 
+        (function (tempo) {
 
+            setTimeout(function () {
+                tempo_real.innerHTML = "Tempo: " + (tempo - 3);
+            }, 800 * tempo);
+        })(tempo)
+
+
+
+        tempo++;
     }
 
-
-
 }
+
+
+
+
 
 function edf() {
 
