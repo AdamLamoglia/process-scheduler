@@ -15,13 +15,13 @@
   </style>
 </head>
 <body>
-   
+
     <label>Quantidade de Processos</label><br>
     <input type="text" id="num_processos">
     <div id="container">
         <a href="#" id="atributos" onclick="criarFields()">Definir Atributos</a>
     </div>
-   
+
     <br><br>
 
     <label>Algoritmo de Escalonamento</label><br>
@@ -33,7 +33,7 @@
         </select><br><br>
 
     <label>Algoritmo de Substituição de Páginas</label><br>
-    <select>
+    <select id="substituicoes">
             <option>FIFO</option>
             <option>MRU</option>
         </select><br><br>
@@ -84,6 +84,13 @@
             </tr>
         </table>
     </div>
- 
+
+    <div id="tabelaLRU">
+        <table id='lru' style="width:35%" align="right">
+            <tr id='lruProcessos'>
+            </tr>
+        </table>
+    </div>
+
 </body>
 </html>
