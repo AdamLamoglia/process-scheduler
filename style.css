@@ -1,9 +1,17 @@
 #tabelaDisco{
     position: relative;
     top: 100px;
+    right: 400px;
 }
 
 #tabelaRam{
     position: relative;
     top: 100px;
+    right: 100px;
+}
+
+#tabelaLRU{
+    position: relative;
+    top: 230px;
+    left: 300px
 }

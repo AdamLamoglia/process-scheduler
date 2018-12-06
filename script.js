@@ -12,7 +12,8 @@ var num_processos,
 	deadlines = [],
 	processos = [],
 	paginas = [],
-	fila = [];
+	fila = [],
+	tempo_referencia = [];
 
 
 class Processo {
@@ -183,6 +184,12 @@ function criarGraficoDeGantt() {
 	time.innerHTML = "Troca de contexto";
 	time.style.backgroundColor = "red";
 
+	timeline = document.getElementById("corDC");
+
+	time = timeline.insertCell(0);
+	time.innerHTML = "DeadLine Cumprido";
+	time.style.backgroundColor = "lightgreen";
+
 }
 
 function criarDisco() {
@@ -243,6 +250,47 @@ function criarRam() {
 		}
 
 
+	}
+
+}
+
+function criarLRU(){
+
+	var time,
+	row;
+
+	table = document.getElementById("lru");
+
+	var nome = table.createCaption();
+
+	nome.innerHTML = "LRU";
+
+	table = document.getElementById("lru");
+
+	row = table.insertRow(-1);
+	time = row.insertCell(-1);
+	time.innerHTML = "Processo";
+	time.width = "30px"
+
+	time = row.insertCell(-1);
+	time.innerHTML = "Ultima Referencia";
+	time.width = "30px"
+
+
+	//Cria linhas
+	for (i = 0; i < num_processos; i++) {
+
+		table = document.getElementById("lru");
+
+		row = table.insertRow(-1);
+
+		time = row.insertCell(-1);
+		time.innerHTML = "P"+i;
+		time.width = "30px"
+
+		time = row.insertCell(-1);
+		time.innerHTML = "-";
+		time.width = "30px"
 	}
 
 }
@@ -456,7 +504,7 @@ function referenciarProcessos(tempo) {
 
 						if (!pageFault()){
 							referenciarPagRam(processos[j].id);
-							console.log(tempo);
+							//console.log(tempo);
 						}
 						referenciarPagDisco(processos[j].id);
 
@@ -507,6 +555,30 @@ function fifo(id){
 
 	fila.shift();
 	fila.push("P" + (id - 1));
+}
+
+function lru(id){
+
+	var table = document.getElementById('lru');
+	var cells,
+		menor_tempo = 999;
+		id_retirada = -1;
+
+	//encontra cabeca da fila
+	for (var i = 1; i <= num_processos; j++) {
+
+			cells = table.rows.item(i).cells;
+
+	
+			if (cells.item(2).innerHTML < menor_tempo) {
+				menor_tempo = cells.item(2).innerHTML;
+				id_retirada = cells.item(1).innerHTML;
+	
+			}
+	}
+
+	//console.log(id_retirada);
+
 }
 
 function pintarPaginas(id) {
@@ -644,6 +716,45 @@ function retirarProcessoRamDisco(id_processo, tempo) {
 
 }
 
+function referenciarTempo(id, tempo){
+
+	var table = document.getElementById('lru');
+	var cells,
+		lugar;
+
+		//console.log(num_processos);
+	//for (var j = 0; j < 2; j++) {
+
+		
+
+		console.log(num_processos + 1);
+		for (var k = 2; k <= parseInt(num_processos) + 1; k++) {
+
+			console.log(k);
+			console.log(table.rows.item(2).cells.item(0).innerHTML);
+			console.log(table.rows.item(k).cells.item(0).innerHTML);
+			cells = table.rows.item(k).cells;
+			//console.log(cells);
+
+			//console.log(cells.item(0).innerHTML); 
+			//console.log(cells.item(1).innerHTML); 
+			
+
+			if (cells.item(0).innerHTML == "P" + (id - 1)) {
+				lugar = k;
+				//console.log("entrou");
+			}
+
+		}
+
+	//}
+
+	cells = table.rows.item(lugar).cells;
+	cells.item(1).innerHTML = tempo - 3; 
+
+
+}
+
 function pintarGraficoPreempcao(processo, tempo){
 
 	(function (processo, tempo) {
@@ -667,7 +778,7 @@ function pintarGraficoPreempcao(processo, tempo){
 					lru(processo.id);
 				}
 			}
-			
+		
 			pintarPaginas(processo.id);
 		}
 
@@ -854,7 +965,6 @@ function roundRobin() {
 
 	quantum = parseInt(document.getElementById("quantum").value);
 	sobrecarga = parseInt(document.getElementById("sobrecarga").value);
-	substituicao = document.getElementById("substituicoes").value
 
 	processos.sort(function (a, b) {
 
@@ -920,6 +1030,14 @@ function roundRobin() {
 
 		if(processo.tempo_execucao - quantum > 0){
 
+			
+
+			(function (processo, tempo) {
+				setTimeout(function () {
+					referenciarTempo(processo.id,tempo);
+				}, 800 * tempo);
+			})(processo, tempo)
+
 			for(var i = 0; i < quantum; i++){
 
 					pintarGraficoPreempcao(processo, tempo);
@@ -974,6 +1092,12 @@ function roundRobin() {
 		}
 
 		else{
+
+			(function (processo, tempo) {
+				setTimeout(function () {
+					referenciarTempo(processo.id,tempo);
+				}, 800 * tempo);
+			})(processo, tempo)
 
 			for(var i = 0; i < processo.tempo_execucao; i++){
 
@@ -1167,7 +1291,6 @@ function edf() {
 
 }
 
-
 function turnaround() {
 	var soma = 0;
 	for (var i = 0; i < processos.length; i++) {
@@ -1205,6 +1328,7 @@ function escalonarProcessos() {
 }
 
 function iniciar() {
+	substituicao = document.getElementById("substituicoes").value;
 
 	deletarFields();
 
@@ -1212,6 +1336,9 @@ function iniciar() {
 
 	criarDisco();
 	criarRam();
+
+	if(substituicao == "MRU")
+		criarLRU();
 
 	escalonarProcessos();
 

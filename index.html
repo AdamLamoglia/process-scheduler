@@ -1,5 +1,6 @@
 <!DOCTYPE <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -14,6 +15,7 @@
         }
   </style>
 </head>
+
 <body>
 
     <label>Quantidade de Processos</label><br>
@@ -26,32 +28,32 @@
 
     <label>Algoritmo de Escalonamento</label><br>
     <select id="escalonamentos">
-            <option>FIFO</option>
-            <option>SJF</option>
-            <option>Round Robin</option>
-            <option>EDF</option>
-        </select><br><br>
+        <option>FIFO</option>
+        <option>SJF</option>
+        <option>Round Robin</option>
+        <option>EDF</option>
+    </select><br><br>
 
     <label>Algoritmo de Substituição de Páginas</label><br>
     <select id="substituicoes">
-            <option>FIFO</option>
-            <option>MRU</option>
-        </select><br><br>
+        <option>FIFO</option>
+        <option>MRU</option>
+    </select><br><br>
 
     <label>Quantum do Sistema</label><br>
     <input type="text" id="quantum"><br><br>
 
     <label>Sobrecarga do Sistema</label><br>
     <input type="text" id="sobrecarga"><br><br>
-    
-    
-    
+
+
+
     <button type="button" onclick="iniciar()">Iniciar</button><br><br>
 
     <div id="tabela">
         <table id='gantt' style="width:95%" align="right">
             <tr id='tempo'>
-        
+
             </tr>
         </table>
     </div>
@@ -60,13 +62,19 @@
     <div id="legendas">
         <table id='executando' style="width:10%" align="left">
             <tr id='corExec'>
-        
+
             </tr>
         </table>
 
         <table id='trocaContexto' style="width:10%" align="left">
             <tr id='corTC'>
-        
+
+            </tr>
+        </table>
+
+        <table id='dlCumprido' style="width:10%" align="left">
+            <tr id='corDC'>
+
             </tr>
         </table>
     </div>
@@ -86,11 +94,12 @@
     </div>
 
     <div id="tabelaLRU">
-        <table id='lru' style="width:35%" align="right">
+        <table id='lru' style="width:35%" align="left">
             <tr id='lruProcessos'>
             </tr>
         </table>
     </div>
 
 </body>
+
 </html>
