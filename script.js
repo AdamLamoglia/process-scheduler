@@ -418,6 +418,31 @@ function referenciarPagRam(id) {
 
 }
 
+
+function referenciarTempo(id, tempo){
+
+	var table = document.getElementById('lru');
+	var cells,
+		lugar;
+
+		
+
+		for (var k = 2; k <= parseInt(num_processos) + 1; k++) {
+
+			cells = table.rows.item(k).cells;
+
+			if (cells.item(0).innerHTML == "P" + (id - 1)) {
+				lugar = k;
+			}
+
+		}
+
+	cells = table.rows.item(lugar).cells;
+	cells.item(1).innerHTML = tempo - 3; 
+
+
+}
+
 function retirarPagDaRam(id) {
 
 	var table = document.getElementById('ram');
@@ -498,18 +523,19 @@ function referenciarProcessos(tempo) {
 
 			if (processos[j].tempo_chegada < tempo - 3 && processos[j].tempo_execucao > 0) {
 
-				(function (j, tempo) {
+				(function (processo, tempo) {
 
 					setTimeout(function () {
 
 						if (!pageFault()){
-							referenciarPagRam(processos[j].id);
-							//console.log(tempo);
+							referenciarPagRam(processo.id);
 						}
-						referenciarPagDisco(processos[j].id);
+						referenciarPagDisco(processo.id);
+
+						
 
 					}, 800 * tempo);
-				})(j, tempo)
+				})(processos[j], tempo)
 
 				processos[j].estaNaRam = processos[j].estaNoDisco = true;
 			}
@@ -565,19 +591,22 @@ function lru(id){
 		id_retirada = -1;
 
 	//encontra cabeca da fila
-	for (var i = 1; i <= num_processos; j++) {
+	for (var k = 2; k <= parseInt(num_processos) + 1; k++) {
 
-			cells = table.rows.item(i).cells;
+			cells = table.rows.item(k).cells;
 
 	
-			if (cells.item(2).innerHTML < menor_tempo) {
-				menor_tempo = cells.item(2).innerHTML;
-				id_retirada = cells.item(1).innerHTML;
+			if (cells.item(1).innerHTML < menor_tempo) {
+				menor_tempo = cells.item(1).innerHTML;
+				id_retirada = cells.item(0).innerHTML;
 	
 			}
 	}
 
-	//console.log(id_retirada);
+	console.log(id_retirada.substring(1, 2));
+
+	retirarPagDaRam(parseInt(id_retirada.substring(1, 2)));
+	referenciarPagRam(id);
 
 }
 
@@ -695,63 +724,24 @@ function pintarSobrecarga(processo, tempo) {
 	})(processo, tempo)
 }
 
-function retirarProcessoRamDisco(id_processo, tempo) {
+function retirarProcessoRamDisco(processo, tempo) {
 
-	(function (id_processo, tempo) {
+	(function (processo, tempo) {
 
 		setTimeout(function () {
-			descolorirPagRam(processos[id_processo].id);
+			descolorirPagRam(processo.id);
 		}, 800 * tempo);
 
 			setTimeout(function () {
-				retirarPagDaRam(processos[id_processo].id);
+				retirarPagDaRam(processo.id);
 			}, 800 * tempo);
 
 			setTimeout(function () {
-				retirarPagDisco(processos[id_processo].id);
+				retirarPagDisco(processo.id);
 			}, 800 * tempo);
 		
 
-	})(id_processo, tempo)
-
-}
-
-function referenciarTempo(id, tempo){
-
-	var table = document.getElementById('lru');
-	var cells,
-		lugar;
-
-		//console.log(num_processos);
-	//for (var j = 0; j < 2; j++) {
-
-		
-
-		console.log(num_processos + 1);
-		for (var k = 2; k <= parseInt(num_processos) + 1; k++) {
-
-			console.log(k);
-			console.log(table.rows.item(2).cells.item(0).innerHTML);
-			console.log(table.rows.item(k).cells.item(0).innerHTML);
-			cells = table.rows.item(k).cells;
-			//console.log(cells);
-
-			//console.log(cells.item(0).innerHTML); 
-			//console.log(cells.item(1).innerHTML); 
-			
-
-			if (cells.item(0).innerHTML == "P" + (id - 1)) {
-				lugar = k;
-				//console.log("entrou");
-			}
-
-		}
-
-	//}
-
-	cells = table.rows.item(lugar).cells;
-	cells.item(1).innerHTML = tempo - 3; 
-
+	})(processo, tempo)
 
 }
 
@@ -768,6 +758,7 @@ function pintarGraficoPreempcao(processo, tempo){
 
 			if(!pageFault()){
 				referenciarPagRam(processo.id);
+
 			}
 			else{
 				if(substituicao == "FIFO"){
@@ -1031,12 +1022,15 @@ function roundRobin() {
 		if(processo.tempo_execucao - quantum > 0){
 
 			
+			if(substituicao == "MRU"){
 
-			(function (processo, tempo) {
-				setTimeout(function () {
-					referenciarTempo(processo.id,tempo);
-				}, 800 * tempo);
-			})(processo, tempo)
+				(function (processo, tempo) {
+					setTimeout(function () {
+						referenciarTempo(processo.id,tempo);
+					}, 800 * tempo);
+				})(processo, tempo)
+			}
+
 
 			for(var i = 0; i < quantum; i++){
 
@@ -1079,6 +1073,8 @@ function roundRobin() {
 
 
 			var index = processos.indexOf(processo);
+
+			processo.estaNaRam = processo.estaNoDisco = true;
 					
 			if (index > -1) {
 				processos.splice(index, 1);
@@ -1093,11 +1089,15 @@ function roundRobin() {
 
 		else{
 
-			(function (processo, tempo) {
-				setTimeout(function () {
-					referenciarTempo(processo.id,tempo);
-				}, 800 * tempo);
-			})(processo, tempo)
+						
+			if(substituicao == "MRU"){
+
+				(function (processo, tempo) {
+					setTimeout(function () {
+						referenciarTempo(processo.id,tempo);
+					}, 800 * tempo);
+				})(processo, tempo)
+			}
 
 			for(var i = 0; i < processo.tempo_execucao; i++){
 
@@ -1119,7 +1119,7 @@ function roundRobin() {
 
 			processo.tempo_execucao = 0;
 
-			retirarProcessoRamDisco(processo.id - 1, tempo);
+			retirarProcessoRamDisco(processo, tempo);
 
 			processos_aux[processo.id - 1].tempo_finalizacao = tempo - 4;
 
