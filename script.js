@@ -118,7 +118,8 @@ function criarGraficoDeGantt() {
 
 	table.createCaption().innerHTML = "Tempo: 0"
 
-	var time;
+	var time,
+		num_colunas;
 
 	timeline = document.getElementById("tempo");
 
@@ -134,8 +135,13 @@ function criarGraficoDeGantt() {
 	time = timeline.insertCell(-1);
 	time.innerHTML = "DL";
 
+	if(num_processos > 7)
+		num_colunas = 100;
+	else
+		num_colunas = 50;
+		
 	//Cria colunas
-	for (i = 0; i < 50; i++) {
+	for (i = 0; i < num_colunas; i++) {
 
 		time = timeline.insertCell(-1);
 		time.innerHTML = i;
@@ -161,7 +167,7 @@ function criarGraficoDeGantt() {
 		time.innerHTML = processos[i].deadline;
 
 		//Cria colunas para cada linha
-		for (j = 0; j < 50; j++) {
+		for (j = 0; j < num_colunas; j++) {
 
 			time = row.insertCell(-1);
 			time.innerHTML = "&nbsp";
@@ -418,7 +424,6 @@ function referenciarPagRam(id) {
 
 }
 
-
 function referenciarTempo(id, tempo){
 
 	var table = document.getElementById('lru');
@@ -596,16 +601,14 @@ function lru(id){
 			cells = table.rows.item(k).cells;
 
 	
-			if (cells.item(1).innerHTML < menor_tempo) {
-				menor_tempo = cells.item(1).innerHTML;
+			if (parseInt(cells.item(1).innerHTML) < menor_tempo) {
+				menor_tempo = parseInt(cells.item(1).innerHTML);
 				id_retirada = cells.item(0).innerHTML;
 	
 			}
 	}
 
-	console.log(id_retirada.substring(1, 2));
-
-	retirarPagDaRam(parseInt(id_retirada.substring(1, 2)));
+	retirarPagDaRam(parseInt(id_retirada.substring(1, 2))+1);
 	referenciarPagRam(id);
 
 }
@@ -732,13 +735,13 @@ function retirarProcessoRamDisco(processo, tempo) {
 			descolorirPagRam(processo.id);
 		}, 800 * tempo);
 
-			setTimeout(function () {
-				retirarPagDaRam(processo.id);
-			}, 800 * tempo);
+		setTimeout(function () {
+			retirarPagDaRam(processo.id);
+		}, 800 * tempo);
 
-			setTimeout(function () {
-				retirarPagDisco(processo.id);
-			}, 800 * tempo);
+		setTimeout(function () {
+			retirarPagDisco(processo.id);
+		}, 800 * tempo);
 		
 
 	})(processo, tempo)
@@ -926,7 +929,7 @@ function naoPreemptivo(){
 
 			if (processos[id_processo].tempo_execucao == 0) {
 				processos[id_processo].tempo_finalizacao = tempo - 3;
-				retirarProcessoRamDisco(id_processo, tempo);
+				retirarProcessoRamDisco(processos[id_processo], tempo);
 
 				processos[id_processo].executando = false;
 			}
@@ -1204,6 +1207,15 @@ function edf() {
 
 		if(processo.tempo_execucao - quantum > 0){
 
+			if(substituicao == "MRU"){
+
+				(function (processo, tempo) {
+					setTimeout(function () {
+						referenciarTempo(processo.id,tempo);
+					}, 800 * tempo);
+				})(processo, tempo)
+			}
+
 			for(var i = 0; i < quantum; i++){
 
 					pintarGraficoPreempcao(processo, tempo);
@@ -1247,6 +1259,15 @@ function edf() {
 
 		else{
 
+			if(substituicao == "MRU"){
+
+				(function (processo, tempo) {
+					setTimeout(function () {
+						referenciarTempo(processo.id,tempo);
+					}, 800 * tempo);
+				})(processo, tempo)
+			}
+
 			for(var i = 0; i < processo.tempo_execucao; i++){
 
 				pintarGraficoPreempcao(processo, tempo);
@@ -1269,7 +1290,7 @@ function edf() {
 			if(processo.deadline >= tempo - 4)
 				pintarDeadlineCumprido(processo, tempo);
 			
-			retirarProcessoRamDisco(processo.id - 1, tempo);
+			retirarProcessoRamDisco(processo, tempo);
 
 			processos_aux[processo.id - 1].tempo_finalizacao = tempo - 4;
 

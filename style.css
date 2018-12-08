@@ -1,7 +1,7 @@
 #tabelaDisco{
     position: relative;
     top: 100px;
-    right: 400px;
+    right: 900px;
 }
 
 #tabelaRam{
@@ -13,5 +13,5 @@
 #tabelaLRU{
     position: relative;
     top: 230px;
-    left: 300px
+    left: 50px
 }
